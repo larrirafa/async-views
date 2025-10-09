@@ -1,30 +1,20 @@
 import asyncio
-from time import sleep
 import httpx
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 
-
-async def http_call_async():
-    for num in range(1, 6):
-        await asyncio.sleep(1)
-        print(num)
+async def fetch_todos():
+    print("Iniciando busca de dados...")
     async with httpx.AsyncClient() as client:
-        r = await client.get("https://httpbin.org/")
-        print(r)
+        response = await client.get("https://jsonplaceholder.typicode.com/todos?_limit=5")
+        data = response.json()
+        print("Dados recebidos:")
+        for todo in data:
+            print(f"- {todo['title']}")
+    print("Finalizou busca de dados!")
 
-def http_call_sync():
-    for num in range(1, 6):
-        sleep(1)
-        print(num)
-    r = httpx.get("https://httpbin.org/")
-    print(r)
 
-async def async_view(request):
+async def async_api_view(request):
     loop = asyncio.get_event_loop()
-    loop.create_task(http_call_async())
-    return HttpResponse("Non-blocking HTTP request")
-
-def sync_view(request):
-    http_call_sync()
-    return HttpResponse("Blocking HTTP request")
+    loop.create_task(fetch_todos())
+    return HttpResponse("Requisição iniciada — processamento em segundo plano.")
